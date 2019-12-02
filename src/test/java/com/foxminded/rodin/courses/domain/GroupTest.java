@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class GroupTest {
 
     @Test
-    public void shouldCreateValidGroupList() {
+    public void shouldCreateValidGroups() {
 
         List<Group> groups = new ArrayList<Group>(4);
         groups.add(new Group(0, "AA-11"));

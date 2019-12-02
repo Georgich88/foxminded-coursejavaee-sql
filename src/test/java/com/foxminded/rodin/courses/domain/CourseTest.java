@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class CourseTest {
 
     @Test
-    public void shouldCreateCoursesList() {
+    public void shouldCreateCourses() {
 
         List<Course> courses = new ArrayList<Course>(4);
         courses.add(new Course(0, "Math", "Mathematics"));

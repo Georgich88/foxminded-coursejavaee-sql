@@ -13,4 +13,11 @@ public class ApplicationTest {
         });
     }
 
+    @Test
+    public void shouldGenerateData() {
+        assertDoesNotThrow(() -> {
+            Application.generateData();
+        });
+    }
+
 }

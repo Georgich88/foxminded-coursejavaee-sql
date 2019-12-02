@@ -1,7 +1,6 @@
 package com.foxminded.rodin.courses.application;
 
 import java.util.List;
-import java.util.Scanner;
 
 import com.foxminded.rodin.courses.cli.CommandLineInterface;
 import com.foxminded.rodin.courses.dao.CourseDao;
@@ -20,12 +19,14 @@ public class Application {
     public static void main(String[] args) {
 
         initiateDatabase();
+        generateData();
         runCommandUserInterface();
+        deleteDatabase();
     }
 
     public static void runCommandUserInterface() {
-        CommandLineInterface userInterface = new CommandLineInterface(new Scanner(System.in));
-        userInterface.runInterface();
+        CommandLineInterface userInterface = new CommandLineInterface();
+        userInterface.runCommandLineInterface();
     }
 
     public static void initiateDatabase() {
@@ -33,6 +34,14 @@ public class Application {
         QueryExecutor.createUser();
         QueryExecutor.createDatabase();
         QueryExecutor.createTables();
+
+    }
+
+    public static void deleteDatabase() {
+        QueryExecutor.deleteDatabase();
+    }
+
+    public static void generateData() {
 
         DataGenerator dataGenerator = new DataGenerator();
         List<Group> groups = dataGenerator.generateGroups(10);
@@ -50,7 +59,6 @@ public class Application {
 
         CourseDao courseDao = new CourseDaoJdbc();
         courseDao.saveAll(courses);
-
     }
 
 }

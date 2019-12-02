@@ -22,7 +22,8 @@ public class GroupDaoJdbc implements GroupDao {
             "LEFT JOIN students " + 
             "ON students.group_id = groups.group_id " + 
             "GROUP BY groups.group_id " + 
-            "HAVING COUNT(*) <= ?";
+            "HAVING COUNT(*) <= ?" +
+            "ORDER BY groups.group_id";
 
     private final static Logger logger = Logger.getLogger(GroupDaoJdbc.class);
 

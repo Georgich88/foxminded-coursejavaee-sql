@@ -6,13 +6,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.foxminded.rodin.courses.dao.ConnectionUtils;
 import com.foxminded.rodin.courses.dao.StudentDao;
-import com.foxminded.rodin.courses.domain.Course;
 import com.foxminded.rodin.courses.domain.Student;
 
 public class StudentDaoJdbc implements StudentDao {
@@ -27,7 +25,8 @@ public class StudentDaoJdbc implements StudentDao {
             "ON courses_students.student_id = students.student_id " + 
             "INNER  JOIN courses " + 
             "ON courses_students.course_id = courses.course_id " + 
-            "WHERE courses.course_name = ?";
+            "WHERE courses.course_name = ?" +
+            "ORDER BY students.student_id";
     private static final String ASSIGN_TO_COURSE = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
     private static final String DELETE_FROM_COURSE =
             "DELETE FROM courses_students WHERE student_id = ? AND course_id = ?";
@@ -199,39 +198,6 @@ public class StudentDaoJdbc implements StudentDao {
     }
 
     @Override
-    public void assignToCourses(Map<Student, List<Course>> map) {
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-
-        try {
-            statement = connection.prepareStatement(ASSIGN_TO_COURSE);
-            for (Map.Entry<Student, List<Course>> entry : map.entrySet()) {
-                Student student = entry.getKey();
-                for (Course course : entry.getValue()) {
-                    statement.setInt(1, student.getId());
-                    statement.setInt(2, course.getId());
-                    statement.addBatch();
-                }
-            }
-            statement.executeBatch();
-        } catch (SQLException e) {
-            logger.error("Cannot assign a student to courses", e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
-        }
-        
-    }
-
-    @Override
     public void assignToCourse(int studentId, int courseId) {
 
         Connection connection = null;
@@ -270,14 +236,15 @@ public class StudentDaoJdbc implements StudentDao {
             logger.error("Cannot establish connection", e);
             return;
         }
-
+        logger.trace(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId));
         try {
             statement = connection.prepareStatement(DELETE_FROM_COURSE);
             statement.setInt(1, studentId);
             statement.setInt(2, courseId);
             statement.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Cannot assign a student to a course", e);
+            logger.error(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId),
+                    e);
         } finally {
             ConnectionUtils.closeQuietly(statement);
             ConnectionUtils.closeQuietly(connection);

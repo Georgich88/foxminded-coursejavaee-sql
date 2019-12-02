@@ -21,10 +21,10 @@ public class CourseDaoJdbc implements CourseDao {
     private static final String SELECT_ALL_COURSES = "SELECT course_id, course_name, course_description FROM public.courses";
     private static final String SELECT_BY_STUDENT_ID =
             "SELECT courses.course_id, courses.course_name, courses.course_description " + 
-            "FROM students_courses " + 
+            "FROM courses_students " + 
             "INNER JOIN courses " + 
-            "ON students_courses.course_id = courses.course_id " + 
-            "WHERE students_courses.student_id = ?";
+            "ON courses_students.course_id = courses.course_id " + 
+            "WHERE courses_students.student_id = ?";
     
     
     private final static Logger logger = Logger.getLogger(CourseDaoJdbc.class);

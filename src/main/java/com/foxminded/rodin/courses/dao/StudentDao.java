@@ -1,9 +1,7 @@
 package com.foxminded.rodin.courses.dao;
 
 import java.util.List;
-import java.util.Map;
 
-import com.foxminded.rodin.courses.domain.Course;
 import com.foxminded.rodin.courses.domain.Student;
 
 public interface StudentDao {
@@ -17,8 +15,6 @@ public interface StudentDao {
     void deleteById(int studentId);
 
     List<Student> findByCourseName(String courseName);
-
-    void assignToCourses(Map<Student, List<Course>> map);
 
     void assignToCourse(int studentId, int courseId);
 

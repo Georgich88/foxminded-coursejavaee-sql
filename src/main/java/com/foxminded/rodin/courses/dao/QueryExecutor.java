@@ -13,6 +13,7 @@ public class QueryExecutor {
 
     private static final String QUERY_FILE_PATH_CREATE_USER = "src/main/resources/create-user.sql";
     private static final String QUERY_FILE_PATH_CREATE_DB = "src/main/resources/create-db-courses.sql";
+    private static final String QUERY_FILE_PATH_DROP_DB = "src/main/resources/drop-db-courses.sql";
     private static final String QUERY_FILE_PATH_CREATE_TABLE_COURSES = "src/main/resources/create-table-courses.sql";
     private static final String QUERY_FILE_PATH_CREATE_TABLE_GROUPS = "src/main/resources/create-table-groups.sql";
     private static final String QUERY_FILE_PATH_CREATE_TABLE_STUDENTS = "src/main/resources/create-table-students.sql";
@@ -24,6 +25,15 @@ public class QueryExecutor {
 
         try {
             executeQuery(computeQueryText(QUERY_FILE_PATH_CREATE_DB));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteDatabase() {
+
+        try {
+            executeQuery(computeQueryText(QUERY_FILE_PATH_DROP_DB));
         } catch (Exception e) {
             e.printStackTrace();
         }
