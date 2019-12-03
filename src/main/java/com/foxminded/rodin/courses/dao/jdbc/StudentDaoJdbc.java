@@ -16,8 +16,6 @@ import com.foxminded.rodin.courses.domain.Student;
 public class StudentDaoJdbc implements StudentDao {
 
     private static final String SELECT_ALL = "SELECT * FROM students";
-    private static final String INSERT = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
-    private static final String DELETE = "DELETE FROM students WHERE student_id = ?";
     private static final String SELECT_BY_COURSE_NAME =
             "SELECT students.student_id, students.group_id, students.first_name, students.last_name " + 
             "FROM courses_students " + 
@@ -27,10 +25,35 @@ public class StudentDaoJdbc implements StudentDao {
             "ON courses_students.course_id = courses.course_id " + 
             "WHERE courses.course_name = ?" +
             "ORDER BY students.student_id";
+    private static final int SELECT_BY_COURSE_NAME_ARG_NUMBER = 1;    
+    private static final String SELECT_FIELD_NAME_STUDENT_ID = "student_id";
+    private static final String SELECT_FIELD_NAME_FIRST_NAME = "first_name";
+    private static final String SELECT_FIELD_NAME_LAST_NAME = "last_name";
+    private static final String SELECT_FIELD_NAME_GROUP_ID = "group_id";
+
+    private static final String INSERT = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
+    private static final int INSERT_ARG_NUMBER_STUDENT_ID = 1;
+    private static final int INSERT_ARG_NUMBER_GROUP_ID = 2;
+    private static final int INSERT_ARG_NUMBER_FIRST_NAME = 3;
+    private static final int INSERT_ARG_NUMBER_LAST_NAME = 4;
+
+    private static final String INSERT_GENERATE_ID = "INSERT INTO students (group_id, first_name, last_name) VALUES (?, ?, ?)";
+    private static final int INSERT_GENERATE_ID_ARG_NUMBER_GROUP_ID = 1;
+    private static final int INSERT_GENERATE_ID_ARG_NUMBER_FIRST_NAME = 2;
+    private static final int INSERT_GENERATE_ID_ARG_NUMBER_LAST_NAME = 3;
+
+    private static final String DELETE = "DELETE FROM students WHERE student_id = ?";
+    private static final int DELETE_ARG_NUMBER_STUDENT_ID = 1;
+
     private static final String ASSIGN_TO_COURSE = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
+    private static final int ASSIGN_TO_COURSE_ARG_NUMBER_STUDENT_ID = 1;
+    private static final int ASSIGN_TO_COURSE_ARG_NUMBER_COURSE_ID = 2;
+
     private static final String DELETE_FROM_COURSE =
             "DELETE FROM courses_students WHERE student_id = ? AND course_id = ?";
-    
+    private static final int DELETE_FROM_COURSE_ARG_NUMBER_STUDENT_ID = 1;
+    private static final int DELETE_FROM_COURSE_ARG_NUMBER_COURSE_ID = 2;
+
     private final static Logger logger = Logger.getLogger(StudentDaoJdbc.class);
 
     @Override
@@ -69,9 +92,10 @@ public class StudentDaoJdbc implements StudentDao {
         List<Student> students = new ArrayList<>();
 
         while (resultSet.next()) {
-            Student student = new Student(resultSet.getInt("student_id"), resultSet.getString("first_name"),
-                    resultSet.getString("last_name"));
-            student.setGroupId(resultSet.getInt("group_id"));
+            Student student = new Student(resultSet.getInt(SELECT_FIELD_NAME_STUDENT_ID),
+                    resultSet.getString(SELECT_FIELD_NAME_FIRST_NAME),
+                    resultSet.getString(SELECT_FIELD_NAME_LAST_NAME));
+            student.setGroupId(resultSet.getInt(SELECT_FIELD_NAME_GROUP_ID));
             students.add(student);
         }
 
@@ -93,12 +117,8 @@ public class StudentDaoJdbc implements StudentDao {
         }
 
         try {
-            statement = connection.prepareStatement(INSERT);
             for (Student student : students) {
-                statement.setInt(1, student.getId());
-                statement.setInt(2, student.getGroupId());
-                statement.setString(3, student.getFirstName());
-                statement.setString(4, student.getLastName());
+                statement = prepareSaveStatement(connection, student);
                 statement.addBatch();
             }
             statement.executeBatch();
@@ -125,11 +145,7 @@ public class StudentDaoJdbc implements StudentDao {
         }
 
         try {
-            statement = connection.prepareStatement(INSERT);
-            statement.setInt(1, student.getId());
-            statement.setInt(2, student.getGroupId());
-            statement.setString(3, student.getFirstName());
-            statement.setString(4, student.getLastName());
+            statement = prepareSaveStatement(connection, student);
             statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Cannot retireve students", e);
@@ -138,6 +154,23 @@ public class StudentDaoJdbc implements StudentDao {
             ConnectionUtils.closeQuietly(connection);
         }
 
+    }
+
+    private PreparedStatement prepareSaveStatement(Connection connection, Student student) throws SQLException {
+        PreparedStatement statement;
+        if (student.getId() == 0) {
+            statement = connection.prepareStatement(INSERT_GENERATE_ID);
+            statement.setInt(INSERT_GENERATE_ID_ARG_NUMBER_GROUP_ID, student.getGroupId());
+            statement.setString(INSERT_GENERATE_ID_ARG_NUMBER_FIRST_NAME, student.getFirstName());
+            statement.setString(INSERT_GENERATE_ID_ARG_NUMBER_LAST_NAME, student.getLastName());
+        } else {
+            statement = connection.prepareStatement(INSERT);
+            statement.setInt(INSERT_ARG_NUMBER_STUDENT_ID, student.getId());
+            statement.setInt(INSERT_ARG_NUMBER_GROUP_ID, student.getGroupId());
+            statement.setString(INSERT_ARG_NUMBER_FIRST_NAME, student.getFirstName());
+            statement.setString(INSERT_ARG_NUMBER_LAST_NAME, student.getLastName());
+        }
+        return statement;
     }
 
     @Override
@@ -155,7 +188,7 @@ public class StudentDaoJdbc implements StudentDao {
 
         try {
             statement = connection.prepareStatement(DELETE);
-            statement.setInt(1, studentId);
+            statement.setInt(DELETE_ARG_NUMBER_STUDENT_ID, studentId);
             statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Cannot delete student by ID", e);
@@ -183,7 +216,7 @@ public class StudentDaoJdbc implements StudentDao {
 
         try {
             statement = connection.prepareStatement(SELECT_BY_COURSE_NAME);
-            statement.setString(1, courseName);
+            statement.setString(SELECT_BY_COURSE_NAME_ARG_NUMBER, courseName);
             resultSet = statement.executeQuery();
             students = processResultSet(resultSet);
         } catch (SQLException e) {
@@ -212,8 +245,8 @@ public class StudentDaoJdbc implements StudentDao {
 
         try {
             statement = connection.prepareStatement(ASSIGN_TO_COURSE);
-            statement.setInt(1, studentId);
-            statement.setInt(2, courseId);
+            statement.setInt(ASSIGN_TO_COURSE_ARG_NUMBER_STUDENT_ID, studentId);
+            statement.setInt(ASSIGN_TO_COURSE_ARG_NUMBER_COURSE_ID, courseId);
             statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Cannot assign a student to a course", e);
@@ -239,8 +272,8 @@ public class StudentDaoJdbc implements StudentDao {
         logger.trace(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId));
         try {
             statement = connection.prepareStatement(DELETE_FROM_COURSE);
-            statement.setInt(1, studentId);
-            statement.setInt(2, courseId);
+            statement.setInt(DELETE_FROM_COURSE_ARG_NUMBER_STUDENT_ID, studentId);
+            statement.setInt(DELETE_FROM_COURSE_ARG_NUMBER_COURSE_ID, courseId);
             statement.executeUpdate();
         } catch (SQLException e) {
             logger.error(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId),

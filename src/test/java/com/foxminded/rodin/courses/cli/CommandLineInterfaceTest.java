@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.foxminded.rodin.courses.commandlineinterface.CommandLineInterface;
 import com.foxminded.rodin.courses.dao.CourseDao;
 import com.foxminded.rodin.courses.dao.QueryExecutor;
 import com.foxminded.rodin.courses.dao.StudentDao;

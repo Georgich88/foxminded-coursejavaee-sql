@@ -2,7 +2,7 @@ package com.foxminded.rodin.courses.application;
 
 import java.util.List;
 
-import com.foxminded.rodin.courses.cli.CommandLineInterface;
+import com.foxminded.rodin.courses.commandlineinterface.CommandLineInterface;
 import com.foxminded.rodin.courses.dao.CourseDao;
 import com.foxminded.rodin.courses.dao.GroupDao;
 import com.foxminded.rodin.courses.dao.QueryExecutor;

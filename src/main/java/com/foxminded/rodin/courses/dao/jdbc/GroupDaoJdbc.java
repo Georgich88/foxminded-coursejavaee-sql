@@ -16,7 +16,10 @@ import com.foxminded.rodin.courses.domain.Group;
 public class GroupDaoJdbc implements GroupDao {
 
     private static final String INSERT = "INSERT INTO groups (group_id, name) VALUES (?, ?)";
-    private static final String FIND_BY_STUDENTS_COUNT_LE =
+    private static final int INSERT_GROUP_ID_ARG_NUMBER = 1;
+    private static final int INSERT_NAME_ARG_NUMBER = 2;
+
+    private static final String FIND_BY_STUDENTS =
             "SELECT groups.group_id, groups.name, COUNT(students.student_id) " +
             "FROM groups " + 
             "LEFT JOIN students " + 
@@ -24,6 +27,8 @@ public class GroupDaoJdbc implements GroupDao {
             "GROUP BY groups.group_id " + 
             "HAVING COUNT(*) <= ?" +
             "ORDER BY groups.group_id";
+    private static final int FIND_BY_STUDENTS_COUNT_ARG_NUMBER = 1;
+
 
     private final static Logger logger = Logger.getLogger(GroupDaoJdbc.class);
 
@@ -43,8 +48,8 @@ public class GroupDaoJdbc implements GroupDao {
         try {
             statement = connection.prepareStatement(INSERT);
             for (Group group : groups) {
-                statement.setInt(1, group.getId());
-                statement.setString(2, group.getName());
+                statement.setInt(INSERT_GROUP_ID_ARG_NUMBER, group.getId());
+                statement.setString(INSERT_NAME_ARG_NUMBER, group.getName());
                 statement.addBatch();
             }
             statement.executeBatch();
@@ -73,8 +78,8 @@ public class GroupDaoJdbc implements GroupDao {
         }
 
         try {
-            statement = connection.prepareStatement(FIND_BY_STUDENTS_COUNT_LE);
-            statement.setInt(1, count);
+            statement = connection.prepareStatement(FIND_BY_STUDENTS);
+            statement.setInt(FIND_BY_STUDENTS_COUNT_ARG_NUMBER, count);
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 groups.add(new Group(resultSet.getInt(1), resultSet.getString(2)));
