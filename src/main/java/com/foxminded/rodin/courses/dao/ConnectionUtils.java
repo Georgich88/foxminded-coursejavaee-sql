@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -48,28 +46,6 @@ public class ConnectionUtils {
 
     }
 
-    public static void closeQuietly(Connection connection) {
-        try {
-            connection.close();
-        } catch (SQLException e) {
-            logger.warn("Cannot close connection", e);
-        }
-    }
 
-    public static void closeQuietly(ResultSet resultSet) {
-        try {
-            resultSet.close();
-        } catch (SQLException e) {
-            logger.warn("Cannot close result set", e);
-        }
-    }
-
-    public static void closeQuietly(PreparedStatement statement) {
-        try {
-            statement.close();
-        } catch (SQLException e) {
-            logger.warn("Cannot close prepared statement", e);
-        }
-    }
 
 }

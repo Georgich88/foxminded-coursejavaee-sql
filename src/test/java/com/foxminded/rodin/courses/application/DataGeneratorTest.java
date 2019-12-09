@@ -17,7 +17,6 @@ public class DataGeneratorTest {
     private DataGenerator dataGenerator;
 
     public DataGeneratorTest() {
-        super();
         this.dataGenerator = new DataGenerator();
     }
 

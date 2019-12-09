@@ -15,8 +15,8 @@ import com.foxminded.rodin.courses.domain.Student;
 
 public class StudentDaoJdbc implements StudentDao {
 
-    private static final String SELECT_ALL = "SELECT * FROM students";
-    private static final String SELECT_BY_COURSE_NAME =
+    private static final String SELECTION = "SELECT * FROM students";
+    private static final String SELECTION_BY_COURSE_NAME =
             "SELECT students.student_id, students.group_id, students.first_name, students.last_name " + 
             "FROM courses_students " + 
             "INNER  JOIN students " + 
@@ -25,34 +25,34 @@ public class StudentDaoJdbc implements StudentDao {
             "ON courses_students.course_id = courses.course_id " + 
             "WHERE courses.course_name = ?" +
             "ORDER BY students.student_id";
-    private static final int SELECT_BY_COURSE_NAME_ARG_NUMBER = 1;    
-    private static final String SELECT_FIELD_NAME_STUDENT_ID = "student_id";
-    private static final String SELECT_FIELD_NAME_FIRST_NAME = "first_name";
-    private static final String SELECT_FIELD_NAME_LAST_NAME = "last_name";
-    private static final String SELECT_FIELD_NAME_GROUP_ID = "group_id";
+    private static final int SELECTION_BY_COURSE_NAME_PARAMETER = 1;    
+    private static final String SELECTION_FIELD_NAME_STUDENT_ID = "student_id";
+    private static final String SELECTION_FIELD_NAME_FIRST_NAME = "first_name";
+    private static final String SELECTION_FIELD_NAME_LAST_NAME = "last_name";
+    private static final String SELECTION_FIELD_NAME_GROUP_ID = "group_id";
 
-    private static final String INSERT = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
-    private static final int INSERT_ARG_NUMBER_STUDENT_ID = 1;
-    private static final int INSERT_ARG_NUMBER_GROUP_ID = 2;
-    private static final int INSERT_ARG_NUMBER_FIRST_NAME = 3;
-    private static final int INSERT_ARG_NUMBER_LAST_NAME = 4;
+    private static final String INSERTION = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
+    private static final int INSERTION_STUDENT_ID_PARAMETER = 1;
+    private static final int INSERTION_GROUP_ID_PARAMETER = 2;
+    private static final int INSERTION_FIRST_NAME_PARAMETER = 3;
+    private static final int INSERTION_LAST_NAME_PARAMETER = 4;
 
-    private static final String INSERT_GENERATE_ID = "INSERT INTO students (group_id, first_name, last_name) VALUES (?, ?, ?)";
-    private static final int INSERT_GENERATE_ID_ARG_NUMBER_GROUP_ID = 1;
-    private static final int INSERT_GENERATE_ID_ARG_NUMBER_FIRST_NAME = 2;
-    private static final int INSERT_GENERATE_ID_ARG_NUMBER_LAST_NAME = 3;
+    private static final String INSERTION_GENERATE_ID = "INSERT INTO students (group_id, first_name, last_name) VALUES (?, ?, ?)";
+    private static final int INSERTION_GENERATE_ID_GROUP_ID_PARAMETER = 1;
+    private static final int INSERTION_GENERATE_ID_FIRST_NAME_PARAMETER = 2;
+    private static final int INSERTION_GENERATE_ID_LAST_NAME_PARAMETER = 3;
 
-    private static final String DELETE = "DELETE FROM students WHERE student_id = ?";
-    private static final int DELETE_ARG_NUMBER_STUDENT_ID = 1;
+    private static final String DELETION = "DELETE FROM students WHERE student_id = ?";
+    private static final int DELETION_PARAMETER_STUDENT_ID = 1;
 
-    private static final String ASSIGN_TO_COURSE = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
-    private static final int ASSIGN_TO_COURSE_ARG_NUMBER_STUDENT_ID = 1;
-    private static final int ASSIGN_TO_COURSE_ARG_NUMBER_COURSE_ID = 2;
+    private static final String ASSIGNMENT = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
+    private static final int ASSIGNMENT_STUDENT_ID_PARAMETER = 1;
+    private static final int ASSIGNMENT_COURSE_ID_PARAMETER = 2;
 
-    private static final String DELETE_FROM_COURSE =
+    private static final String EXPULSION =
             "DELETE FROM courses_students WHERE student_id = ? AND course_id = ?";
-    private static final int DELETE_FROM_COURSE_ARG_NUMBER_STUDENT_ID = 1;
-    private static final int DELETE_FROM_COURSE_ARG_NUMBER_COURSE_ID = 2;
+    private static final int EXPULSION_STUDENT_ID_PARAMETER = 1;
+    private static final int EXPULSION_COURSE_ID_PARAMETER = 2;
 
     private final static Logger logger = Logger.getLogger(StudentDaoJdbc.class);
 
@@ -61,27 +61,13 @@ public class StudentDaoJdbc implements StudentDao {
 
         List<Student> students = new ArrayList<Student>();
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return students;
-        }
-
-        try {
-            statement = connection.prepareStatement(SELECT_ALL);
-            resultSet = statement.executeQuery();
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = connection.prepareStatement(SELECTION);
+                ResultSet resultSet = statement.executeQuery();) {
             students = processResultSet(resultSet);
+            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot retireve students", e);
-        } finally {
-            ConnectionUtils.closeQuietly(resultSet);
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
 
         return students;
@@ -92,10 +78,10 @@ public class StudentDaoJdbc implements StudentDao {
         List<Student> students = new ArrayList<>();
 
         while (resultSet.next()) {
-            Student student = new Student(resultSet.getInt(SELECT_FIELD_NAME_STUDENT_ID),
-                    resultSet.getString(SELECT_FIELD_NAME_FIRST_NAME),
-                    resultSet.getString(SELECT_FIELD_NAME_LAST_NAME));
-            student.setGroupId(resultSet.getInt(SELECT_FIELD_NAME_GROUP_ID));
+            Student student = new Student(resultSet.getInt(SELECTION_FIELD_NAME_STUDENT_ID),
+                    resultSet.getString(SELECTION_FIELD_NAME_FIRST_NAME),
+                    resultSet.getString(SELECTION_FIELD_NAME_LAST_NAME));
+            student.setGroupId(resultSet.getInt(SELECTION_FIELD_NAME_GROUP_ID));
             students.add(student);
         }
 
@@ -105,53 +91,18 @@ public class StudentDaoJdbc implements StudentDao {
 
     @Override
     public void saveAll(List<Student> students) {
-
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-
-        try {
-            for (Student student : students) {
-                statement = prepareSaveStatement(connection, student);
-                statement.addBatch();
-            }
-            statement.executeBatch();
-        } catch (SQLException e) {
-            logger.error("Cannot retireve students", e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
-        }
-        
+        students.forEach(s -> save(s));
     }
 
     @Override
     public void save(Student student) {
         
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-
-        try {
-            statement = prepareSaveStatement(connection, student);
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = prepareSaveStatement(connection, student)) {
             statement.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot retireve students", e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
 
     }
@@ -159,16 +110,16 @@ public class StudentDaoJdbc implements StudentDao {
     private PreparedStatement prepareSaveStatement(Connection connection, Student student) throws SQLException {
         PreparedStatement statement;
         if (student.getId() == 0) {
-            statement = connection.prepareStatement(INSERT_GENERATE_ID);
-            statement.setInt(INSERT_GENERATE_ID_ARG_NUMBER_GROUP_ID, student.getGroupId());
-            statement.setString(INSERT_GENERATE_ID_ARG_NUMBER_FIRST_NAME, student.getFirstName());
-            statement.setString(INSERT_GENERATE_ID_ARG_NUMBER_LAST_NAME, student.getLastName());
+            statement = connection.prepareStatement(INSERTION_GENERATE_ID);
+            statement.setInt(INSERTION_GENERATE_ID_GROUP_ID_PARAMETER, student.getGroupId());
+            statement.setString(INSERTION_GENERATE_ID_FIRST_NAME_PARAMETER, student.getFirstName());
+            statement.setString(INSERTION_GENERATE_ID_LAST_NAME_PARAMETER, student.getLastName());
         } else {
-            statement = connection.prepareStatement(INSERT);
-            statement.setInt(INSERT_ARG_NUMBER_STUDENT_ID, student.getId());
-            statement.setInt(INSERT_ARG_NUMBER_GROUP_ID, student.getGroupId());
-            statement.setString(INSERT_ARG_NUMBER_FIRST_NAME, student.getFirstName());
-            statement.setString(INSERT_ARG_NUMBER_LAST_NAME, student.getLastName());
+            statement = connection.prepareStatement(INSERTION);
+            statement.setInt(INSERTION_STUDENT_ID_PARAMETER, student.getId());
+            statement.setInt(INSERTION_GROUP_ID_PARAMETER, student.getGroupId());
+            statement.setString(INSERTION_FIRST_NAME_PARAMETER, student.getFirstName());
+            statement.setString(INSERTION_LAST_NAME_PARAMETER, student.getLastName());
         }
         return statement;
     }
@@ -176,25 +127,13 @@ public class StudentDaoJdbc implements StudentDao {
     @Override
     public void deleteById(int studentId) {
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-
-        try {
-            statement = connection.prepareStatement(DELETE);
-            statement.setInt(DELETE_ARG_NUMBER_STUDENT_ID, studentId);
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = connection.prepareStatement(DELETION)) {
+            statement.setInt(DELETION_PARAMETER_STUDENT_ID, studentId);
             statement.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot delete student by ID", e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
     }
 
@@ -203,28 +142,14 @@ public class StudentDaoJdbc implements StudentDao {
 
         List<Student> students = new ArrayList<Student>();
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return students;
-        }
-
-        try {
-            statement = connection.prepareStatement(SELECT_BY_COURSE_NAME);
-            statement.setString(SELECT_BY_COURSE_NAME_ARG_NUMBER, courseName);
-            resultSet = statement.executeQuery();
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_COURSE_NAME)) {
+            statement.setString(SELECTION_BY_COURSE_NAME_PARAMETER, courseName);
+            ResultSet resultSet = statement.executeQuery();
             students = processResultSet(resultSet);
+            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot retireve students by course name", e);
-        } finally {
-            ConnectionUtils.closeQuietly(resultSet);
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
 
         return students;
@@ -233,26 +158,14 @@ public class StudentDaoJdbc implements StudentDao {
     @Override
     public void assignToCourse(int studentId, int courseId) {
 
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-
-        try {
-            statement = connection.prepareStatement(ASSIGN_TO_COURSE);
-            statement.setInt(ASSIGN_TO_COURSE_ARG_NUMBER_STUDENT_ID, studentId);
-            statement.setInt(ASSIGN_TO_COURSE_ARG_NUMBER_COURSE_ID, courseId);
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = connection.prepareStatement(ASSIGNMENT)) {
+            statement.setInt(ASSIGNMENT_STUDENT_ID_PARAMETER, studentId);
+            statement.setInt(ASSIGNMENT_COURSE_ID_PARAMETER, courseId);
             statement.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot assign a student to a course", e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
         
     }
@@ -260,27 +173,15 @@ public class StudentDaoJdbc implements StudentDao {
     @Override
     public void deleteFromCourse(int studentId, int courseId) {
         
-        Connection connection = null;
-        PreparedStatement statement = null;
-
-        try {
-            connection = ConnectionUtils.getConnection();
-        } catch (Exception e) {
-            logger.error("Cannot establish connection", e);
-            return;
-        }
-        logger.trace(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId));
-        try {
-            statement = connection.prepareStatement(DELETE_FROM_COURSE);
-            statement.setInt(DELETE_FROM_COURSE_ARG_NUMBER_STUDENT_ID, studentId);
-            statement.setInt(DELETE_FROM_COURSE_ARG_NUMBER_COURSE_ID, courseId);
+        try (Connection connection = ConnectionUtils.getConnection();
+                PreparedStatement statement = connection.prepareStatement(EXPULSION)) {
+            statement.setInt(EXPULSION_STUDENT_ID_PARAMETER, studentId);
+            statement.setInt(EXPULSION_COURSE_ID_PARAMETER, courseId);
             statement.executeUpdate();
+            connection.close();
         } catch (SQLException e) {
             logger.error(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId),
                     e);
-        } finally {
-            ConnectionUtils.closeQuietly(statement);
-            ConnectionUtils.closeQuietly(connection);
         }
     }
 

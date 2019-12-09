@@ -44,7 +44,7 @@ public class CommandLineInterfaceTest {
 
         List<Student> savedStudents = studentDao.findAll();
 
-        String expectedResult = "[Student [id=0, group_id=0, firstName= John, lastName= Jones]]";
+        String expectedResult = "[Student [id=1, group_id=0, firstName= John, lastName= Jones]]";
 
         assertEquals(expectedResult, savedStudents.toString());
     }
@@ -54,23 +54,23 @@ public class CommandLineInterfaceTest {
 
         List<Student> students = new ArrayList<Student>(4);
 
-        students.add(new Student(0, "John", "Jones"));
-        students.add(new Student(1, "Israel", "Adesanya"));
-        students.add(new Student(2, "Stipe", "Miocic"));
+        students.add(new Student(1, "John", "Jones"));
+        students.add(new Student(2, "Israel", "Adesanya"));
+        students.add(new Student(3, "Stipe", "Miocic"));
 
         StudentDao studentDao = new StudentDaoJdbc();
 
         studentDao.saveAll(students);
 
         CommandLineInterface userInterface = new CommandLineInterface();
-        userInterface.executeCommand(new String[] { "-d 1" });
+        userInterface.executeCommand(new String[] { "-d 2" });
 
         List<Student> savedStudents = studentDao.findAll();
         savedStudents.sort((Student student1, Student student2) -> {
             return student1.getId() - student2.getId();
         });
 
-        String expectedResult = "[Student [id=0, group_id=0, firstName=John, lastName=Jones], Student [id=2, group_id=0, firstName=Stipe, lastName=Miocic]]";
+        String expectedResult = "[Student [id=1, group_id=0, firstName=John, lastName=Jones], Student [id=3, group_id=0, firstName=Stipe, lastName=Miocic]]";
 
         assertEquals(expectedResult, savedStudents.toString());
     }

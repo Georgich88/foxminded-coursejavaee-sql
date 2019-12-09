@@ -58,6 +58,7 @@ public class CourseDaoJdbcTest {
         
         List<Student> students = new ArrayList<Student>(1);
         Student student = new Student(0, "John", "Jones");
+        students.add(student);
         List<Course> courses = new ArrayList<Course>(4);
         courses.add(new Course(0, "Math", "Mathematics"));
         courses.add(new Course(1, "Biology", "Anatomy, biophysics, cell and molecular biology, computational biology"));

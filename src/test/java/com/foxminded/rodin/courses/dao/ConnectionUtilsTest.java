@@ -15,7 +15,7 @@ public class ConnectionUtilsTest {
     public void shouldEstablishConnection() {
         assertDoesNotThrow(() -> {
             Connection connection = ConnectionUtils.getConnection();
-            ConnectionUtils.closeQuietly(connection);
+            connection.close();
         });
     }
 
@@ -23,6 +23,7 @@ public class ConnectionUtilsTest {
     public void shouldThrowNoDBPropertiesExceptionWhenGetsWrongPropertiesFilePath() {
         assertThrows(NoDBPropertiesException.class, () -> {
             Connection connection = ConnectionUtils.getConnection("src/wrong-main/resources/db.properties");
+            connection.close();
         });
     }
     

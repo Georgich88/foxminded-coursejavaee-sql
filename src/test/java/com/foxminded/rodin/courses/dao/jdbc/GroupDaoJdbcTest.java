@@ -30,23 +30,23 @@ public class GroupDaoJdbcTest {
         StudentDao studentDao = new StudentDaoJdbc();
 
         List<Student> students = new ArrayList<Student>(4);
-        students.add(new Student(0, "John", "Jones"));
-        students.add(new Student(1, "Israel", "Adesanya"));
-        students.add(new Student(2, "Stipe", "Miocic"));
-        students.add(new Student(3, "Kamaru", "Usman"));
+        students.add(new Student(1, "John", "Jones"));
+        students.add(new Student(2, "Israel", "Adesanya"));
+        students.add(new Student(3, "Stipe", "Miocic"));
+        students.add(new Student(4, "Kamaru", "Usman"));
 
         List<Group> groups = new ArrayList<Group>(4);
-        groups.add(new Group(0, "AA-11"));
-        groups.add(new Group(1, "AA-12"));
-        groups.add(new Group(2, "AB-22"));
-        groups.add(new Group(3, "BC-45"));
+        groups.add(new Group(1, "AA-11"));
+        groups.add(new Group(2, "AA-12"));
+        groups.add(new Group(3, "AB-22"));
+        groups.add(new Group(4, "BC-45"));
         
-        students.get(0).setGroupId(0);
-        students.get(1).setGroupId(0);
-        students.get(2).setGroupId(0);
-        students.get(3).setGroupId(0);
+        students.get(0).setGroupId(1);
+        students.get(1).setGroupId(1);
+        students.get(2).setGroupId(1);
+        students.get(3).setGroupId(1);
 
-        String expectedResult = "[Group [id=1, name=AA-12], Group [id=2, name=AB-22], Group [id=3, name=BC-45]]";
+        String expectedResult = "[Group [id=2, name=AA-12], Group [id=3, name=AB-22], Group [id=4, name=BC-45]]";
         groupDao.saveAll(groups);
         studentDao.saveAll(students);
         
