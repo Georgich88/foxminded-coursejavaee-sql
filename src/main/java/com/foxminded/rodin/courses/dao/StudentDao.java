@@ -12,7 +12,7 @@ public interface StudentDao {
 
     void save(Student student);
 
-    void deleteById(int studentId);
+    void delete(int studentId);
 
     List<Student> findByCourseName(String courseName);
 

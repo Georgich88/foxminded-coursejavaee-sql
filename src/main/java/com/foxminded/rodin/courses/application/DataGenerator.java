@@ -17,6 +17,8 @@ import com.github.javafaker.Name;
 
 public class DataGenerator {
 
+    private static final String GROUP_NAME_SEPARATOR = "-";
+
     private Faker randomDataGenerator;
     private Random randomNumberGenerator;
 
@@ -134,14 +136,16 @@ public class DataGenerator {
     }
 
     private static String generateRandomGroupName() {
-        return RandomStringUtils.randomAlphabetic(2) + "-" + RandomStringUtils.randomNumeric(2);
+        return RandomStringUtils.randomAlphabetic(2) + GROUP_NAME_SEPARATOR + RandomStringUtils.randomNumeric(2);
     }
 
     private int getRandomNumberInRange(int min, int max) {
 
         return randomNumberGenerator
                 .ints(min, (max + 1))
-                .limit(1).findFirst().getAsInt();
+                .limit(1)
+                .findFirst()
+                .getAsInt();
 
     }
 

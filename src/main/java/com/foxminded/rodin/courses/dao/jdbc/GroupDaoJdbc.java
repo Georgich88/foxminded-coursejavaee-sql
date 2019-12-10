@@ -15,11 +15,11 @@ import com.foxminded.rodin.courses.domain.Group;
 
 public class GroupDaoJdbc implements GroupDao {
 
-    private static final String INSERTION = "INSERT INTO groups (group_id, name) VALUES (?, ?)";
+    private static final String INSERTION_QUERY_TEMPLATE = "INSERT INTO groups (group_id, name) VALUES (?, ?)";
     private static final int INSERTION_GROUP_ID_PARAMETER = 1;
     private static final int INSERTION_NAME_PARAMETER = 2;
 
-    private static final String SELECTION_BY_STUDENTS =
+    private static final String SELECTION_BY_STUDENTS_QUERY_TEMPLATE =
             "SELECT groups.group_id, groups.name, COUNT(students.student_id) " +
             "FROM groups " + 
             "LEFT JOIN students " + 
@@ -36,14 +36,13 @@ public class GroupDaoJdbc implements GroupDao {
     public void saveAll(List<Group> groups) {
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(INSERTION);) {
+                PreparedStatement statement = connection.prepareStatement(INSERTION_QUERY_TEMPLATE);) {
             for (Group group : groups) {
                 statement.setInt(INSERTION_GROUP_ID_PARAMETER, group.getId());
                 statement.setString(INSERTION_NAME_PARAMETER, group.getName());
                 statement.addBatch();
             }
             statement.executeBatch();
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot save groups", e);
         }
@@ -55,7 +54,7 @@ public class GroupDaoJdbc implements GroupDao {
         List<Group> groups = new ArrayList<Group>();
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_STUDENTS);) {
+                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_STUDENTS_QUERY_TEMPLATE);) {
             statement.setInt(SELECTION_BY_STUDENTS_COUNT_PARAMETER, count);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {

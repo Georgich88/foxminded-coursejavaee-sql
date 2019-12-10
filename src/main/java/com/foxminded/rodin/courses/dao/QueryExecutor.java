@@ -19,7 +19,7 @@ public class QueryExecutor {
     private static final String PATH_TO_CREATE_TABLE_STUDENTS_QUERY = "src/main/resources/create-table-students.sql";
     private static final String PATH_TO_CREATE_TABLE_COURSES_QUERY_STUDENTS_QUERY = "src/main/resources/create-table-courses_students.sql";
 
-    private static final String UTF8 = "UTF-8";
+    private static final String UTF8_ENCODING = "UTF-8";
 
     private final static Logger logger = Logger.getLogger(QueryExecutor.class);
 
@@ -45,21 +45,17 @@ public class QueryExecutor {
 
         try {
             executeQuery(computeQueryText(PATH_TO_CREATE_USER_QUERY));
-
         } catch (Exception e) {
             logger.error("Cannot create table database user", e);
         }
     }
 
     public static void createTables() {
-        try {
-            executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_COURSES_QUERY));
-            executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_GROUPS_QUERY));
-            executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_STUDENTS_QUERY));
-            executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_COURSES_QUERY_STUDENTS_QUERY));
-        } catch (Exception e) {
-            logger.error("Cannot create database tables database", e);
-        }
+
+        executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_COURSES_QUERY));
+        executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_GROUPS_QUERY));
+        executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_STUDENTS_QUERY));
+        executeQuery(computeQueryText(PATH_TO_CREATE_TABLE_COURSES_QUERY_STUDENTS_QUERY));
     }
 
     private static void executeQuery(String queryText) {
@@ -72,22 +68,36 @@ public class QueryExecutor {
         }
     }
 
-    private static String computeQueryText(String filePath) throws IOException {
-        FileInputStream inputFile = new FileInputStream(filePath);
-        return computeQueryFileContent(inputFile, UTF8);
+    private static String computeQueryText(String filePath) {
+
+        try (FileInputStream inputFile = new FileInputStream(filePath)) {
+            return computeQueryFileContent(inputFile, UTF8_ENCODING);
+        } catch (IOException e) {
+            logger.error(String.format("Cannot read the query text file: %s", filePath), e);
+        }
+
+        return "";
     }
 
-    private static String computeQueryFileContent(FileInputStream inputStream, String encoding) throws IOException {
+    private static String computeQueryFileContent(FileInputStream inputStream, String encoding) {
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+        String line;
+
+        try (InputStreamReader streamReader = new InputStreamReader(inputStream, encoding);
+                BufferedReader reader = new BufferedReader(streamReader)) {
             StringBuilder contentBuilder = new StringBuilder();
-            String line;
             while ((line = reader.readLine()) != null) {
                 contentBuilder.append(line);
                 contentBuilder.append('\n');
             }
             return contentBuilder.toString();
+        } catch (IOException e) {
+            logger.error("Cannot read the query text file", e);
         }
+
+        return "";
+
+    }
 
 
 }

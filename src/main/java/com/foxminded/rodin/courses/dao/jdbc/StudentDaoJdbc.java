@@ -15,8 +15,8 @@ import com.foxminded.rodin.courses.domain.Student;
 
 public class StudentDaoJdbc implements StudentDao {
 
-    private static final String SELECTION = "SELECT * FROM students";
-    private static final String SELECTION_BY_COURSE_NAME =
+    private static final String SELECTION_QUERY_TEMPLATE = "SELECT * FROM students";
+    private static final String SELECTION_BY_COURSE_NAME_QUERY_TEMPLATE =
             "SELECT students.student_id, students.group_id, students.first_name, students.last_name " + 
             "FROM courses_students " + 
             "INNER  JOIN students " + 
@@ -31,25 +31,25 @@ public class StudentDaoJdbc implements StudentDao {
     private static final String SELECTION_FIELD_NAME_LAST_NAME = "last_name";
     private static final String SELECTION_FIELD_NAME_GROUP_ID = "group_id";
 
-    private static final String INSERTION = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
+    private static final String INSERTION_QUERY_TEMPLATE = "INSERT INTO students (student_id, group_id, first_name, last_name) VALUES (?, ?, ?, ?)";
     private static final int INSERTION_STUDENT_ID_PARAMETER = 1;
     private static final int INSERTION_GROUP_ID_PARAMETER = 2;
     private static final int INSERTION_FIRST_NAME_PARAMETER = 3;
     private static final int INSERTION_LAST_NAME_PARAMETER = 4;
 
-    private static final String INSERTION_GENERATE_ID = "INSERT INTO students (group_id, first_name, last_name) VALUES (?, ?, ?)";
+    private static final String INSERTION_GENERATE_ID_QUERY_TEMPLATE = "INSERT INTO students (group_id, first_name, last_name) VALUES (?, ?, ?)";
     private static final int INSERTION_GENERATE_ID_GROUP_ID_PARAMETER = 1;
     private static final int INSERTION_GENERATE_ID_FIRST_NAME_PARAMETER = 2;
     private static final int INSERTION_GENERATE_ID_LAST_NAME_PARAMETER = 3;
 
-    private static final String DELETION = "DELETE FROM students WHERE student_id = ?";
+    private static final String DELETION_QUERY_TEMPLATE = "DELETE FROM students WHERE student_id = ?";
     private static final int DELETION_PARAMETER_STUDENT_ID = 1;
 
-    private static final String ASSIGNMENT = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
+    private static final String ASSIGNMENT_QUERY_TEMPLATE = "INSERT INTO courses_students (student_id, course_id) VALUES (?, ?)";
     private static final int ASSIGNMENT_STUDENT_ID_PARAMETER = 1;
     private static final int ASSIGNMENT_COURSE_ID_PARAMETER = 2;
 
-    private static final String EXPULSION =
+    private static final String EXPULSION_QUERY_TEMPLATE =
             "DELETE FROM courses_students WHERE student_id = ? AND course_id = ?";
     private static final int EXPULSION_STUDENT_ID_PARAMETER = 1;
     private static final int EXPULSION_COURSE_ID_PARAMETER = 2;
@@ -62,7 +62,7 @@ public class StudentDaoJdbc implements StudentDao {
         List<Student> students = new ArrayList<Student>();
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECTION);
+                PreparedStatement statement = connection.prepareStatement(SELECTION_QUERY_TEMPLATE);
                 ResultSet resultSet = statement.executeQuery();) {
             students = processResultSet(resultSet);
             connection.close();
@@ -100,7 +100,6 @@ public class StudentDaoJdbc implements StudentDao {
         try (Connection connection = ConnectionUtils.getConnection();
                 PreparedStatement statement = prepareSaveStatement(connection, student)) {
             statement.executeUpdate();
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot retireve students", e);
         }
@@ -110,12 +109,12 @@ public class StudentDaoJdbc implements StudentDao {
     private PreparedStatement prepareSaveStatement(Connection connection, Student student) throws SQLException {
         PreparedStatement statement;
         if (student.getId() == 0) {
-            statement = connection.prepareStatement(INSERTION_GENERATE_ID);
+            statement = connection.prepareStatement(INSERTION_GENERATE_ID_QUERY_TEMPLATE);
             statement.setInt(INSERTION_GENERATE_ID_GROUP_ID_PARAMETER, student.getGroupId());
             statement.setString(INSERTION_GENERATE_ID_FIRST_NAME_PARAMETER, student.getFirstName());
             statement.setString(INSERTION_GENERATE_ID_LAST_NAME_PARAMETER, student.getLastName());
         } else {
-            statement = connection.prepareStatement(INSERTION);
+            statement = connection.prepareStatement(INSERTION_QUERY_TEMPLATE);
             statement.setInt(INSERTION_STUDENT_ID_PARAMETER, student.getId());
             statement.setInt(INSERTION_GROUP_ID_PARAMETER, student.getGroupId());
             statement.setString(INSERTION_FIRST_NAME_PARAMETER, student.getFirstName());
@@ -125,13 +124,12 @@ public class StudentDaoJdbc implements StudentDao {
     }
 
     @Override
-    public void deleteById(int studentId) {
+    public void delete(int studentId) {
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(DELETION)) {
+                PreparedStatement statement = connection.prepareStatement(DELETION_QUERY_TEMPLATE)) {
             statement.setInt(DELETION_PARAMETER_STUDENT_ID, studentId);
             statement.executeUpdate();
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot delete student by ID", e);
         }
@@ -143,11 +141,10 @@ public class StudentDaoJdbc implements StudentDao {
         List<Student> students = new ArrayList<Student>();
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_COURSE_NAME)) {
+                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_COURSE_NAME_QUERY_TEMPLATE)) {
             statement.setString(SELECTION_BY_COURSE_NAME_PARAMETER, courseName);
             ResultSet resultSet = statement.executeQuery();
             students = processResultSet(resultSet);
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot retireve students by course name", e);
         }
@@ -159,11 +156,10 @@ public class StudentDaoJdbc implements StudentDao {
     public void assignToCourse(int studentId, int courseId) {
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(ASSIGNMENT)) {
+                PreparedStatement statement = connection.prepareStatement(ASSIGNMENT_QUERY_TEMPLATE)) {
             statement.setInt(ASSIGNMENT_STUDENT_ID_PARAMETER, studentId);
             statement.setInt(ASSIGNMENT_COURSE_ID_PARAMETER, courseId);
             statement.executeUpdate();
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot assign a student to a course", e);
         }
@@ -174,11 +170,10 @@ public class StudentDaoJdbc implements StudentDao {
     public void deleteFromCourse(int studentId, int courseId) {
         
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(EXPULSION)) {
+                PreparedStatement statement = connection.prepareStatement(EXPULSION_QUERY_TEMPLATE)) {
             statement.setInt(EXPULSION_STUDENT_ID_PARAMETER, studentId);
             statement.setInt(EXPULSION_COURSE_ID_PARAMETER, courseId);
             statement.executeUpdate();
-            connection.close();
         } catch (SQLException e) {
             logger.error(String.format("Cannot delete the student ID:%s from the course ID:%s", studentId, courseId),
                     e);

@@ -59,7 +59,7 @@ public class StudentDaoJdbcTest {
         studentDao.save(students.get(1));
         studentDao.save(students.get(2));
 
-        studentDao.deleteById(2);
+        studentDao.delete(2);
 
         List<Student> savedStudents = studentDao.findAll();
 

@@ -167,7 +167,7 @@ public class CommandLineInterface {
     }
 
     private void deleteStudentById(int studentId) {
-        studentDao.deleteById(studentId);
+        studentDao.delete(studentId);
     }
 
     private void addStudentToCourse(int studentId, int courseId) {

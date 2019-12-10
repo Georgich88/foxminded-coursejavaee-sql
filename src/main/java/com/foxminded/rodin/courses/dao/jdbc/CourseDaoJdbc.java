@@ -16,17 +16,17 @@ import com.foxminded.rodin.courses.domain.Student;
 
 public class CourseDaoJdbc implements CourseDao {
 
-    private static final String INSERTION = "INSERT INTO courses (course_id, course_name, course_description) VALUES (?, ?, ?)";
+    private static final String INSERTION_QUERY_TEMPLATE = "INSERT INTO courses (course_id, course_name, course_description) VALUES (?, ?, ?)";
     private static final int INSERTION_COURSE_ID_PARAMETER = 1;
     private static final int INSERTION_COURSE_NAME_PARAMETER = 2;
     private static final int INSERTION_COURSE_DESCRIPTION_PARAMETER = 3;
 
-    private static final String COURSE_STUDENTS_INSERTION = "INSERT INTO courses_students (course_id, student_id) VALUES (?, ?)";
+    private static final String COURSE_STUDENTS_INSERTION_QUERY_TEMPLATE = "INSERT INTO courses_students (course_id, student_id) VALUES (?, ?)";
     private static final int COURSE_STUDENTS_INSERTION_COURSE_ID_PARAMETER = 1;
     private static final int COURSE_STUDENTS_INSERTION_STUDENT_ID_PARAMETER = 2;
 
-    private static final String SELECTION_ALL_COURSES = "SELECT course_id, course_name, course_description FROM public.courses";
-    private static final String SELECTION_BY_STUDENT_ID =
+    private static final String SELECTION_ALL_COURSES_QUERY_TEMPLATE = "SELECT course_id, course_name, course_description FROM public.courses";
+    private static final String SELECTION_BY_STUDENT_ID_QUERY_TEMPLATE =
             "SELECT courses.course_id, courses.course_name, courses.course_description " + 
             "FROM courses_students " + 
             "INNER JOIN courses " + 
@@ -42,14 +42,13 @@ public class CourseDaoJdbc implements CourseDao {
     public void saveAll(List<Course> courses) {
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statementCourses = connection.prepareStatement(INSERTION);
-                PreparedStatement statementStudents = connection.prepareStatement(COURSE_STUDENTS_INSERTION)) {
+                PreparedStatement statementCourses = connection.prepareStatement(INSERTION_QUERY_TEMPLATE);
+                PreparedStatement statementStudents = connection
+                        .prepareStatement(COURSE_STUDENTS_INSERTION_QUERY_TEMPLATE)) {
 
             prepareInsertionCoursesStatements(courses, statementCourses, statementStudents);
-            
             statementCourses.executeBatch();
             statementStudents.executeBatch();
-            connection.close();
             
         } catch (SQLException e) {
             logger.error("Cannot save courses", e);
@@ -63,10 +62,9 @@ public class CourseDaoJdbc implements CourseDao {
         List<Course> courses = new ArrayList<Course>();
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECTION_ALL_COURSES);
+                PreparedStatement statement = connection.prepareStatement(SELECTION_ALL_COURSES_QUERY_TEMPLATE);
                 ResultSet resultSet = statement.executeQuery()) {
             courses = processResultSet(resultSet);
-            connection.close();
         } catch (SQLException e) {
             logger.error("Cannot save courses", e);
         } 
@@ -80,7 +78,7 @@ public class CourseDaoJdbc implements CourseDao {
         List<Course> courses = new ArrayList<Course>();
 
         try (Connection connection = ConnectionUtils.getConnection();
-                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_STUDENT_ID)) {
+                PreparedStatement statement = connection.prepareStatement(SELECTION_BY_STUDENT_ID_QUERY_TEMPLATE)) {
             statement.setInt(1, studentId);
             ResultSet resultSet = statement.executeQuery();
             courses = processResultSet(resultSet);

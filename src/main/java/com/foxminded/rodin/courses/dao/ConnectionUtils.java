@@ -41,8 +41,12 @@ public class ConnectionUtils {
 
         Driver driver = new org.postgresql.Driver();
         DriverManager.deregisterDriver(driver);
-        return DriverManager.getConnection(properties.getProperty(URL_PROPERY_NAME),
-                properties.getProperty(USER_PROPERY_NAME), properties.getProperty(PASSWORD_PROPERY_NAME));
+
+        String url = properties.getProperty(URL_PROPERY_NAME);
+        String user = properties.getProperty(USER_PROPERY_NAME);
+        String password = properties.getProperty(PASSWORD_PROPERY_NAME);
+
+        return DriverManager.getConnection(url, user, password);
 
     }
 
